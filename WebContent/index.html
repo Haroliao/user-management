@@ -121,13 +121,14 @@ a {
         <input type="file" id="fileUpload" accept=".csv" style="display: none;" />
         <button id="importButton" class="btn-blue">上传用户列表</button>
         <button id="downloadButton" class="btn-blue">用户列表模板</button>
+        <button class="btn-blue">历史</button>
     </div>
    
     <div class="container">
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th>专属员工号</th>
+                    <th>员工号</th>
                     <th>姓名</th>
                     <th>手机号</th>
                     <th>手机归属地</th>
@@ -154,7 +155,7 @@ a {
     	//visual displayed
     	$(document).on('click', '#addRowButton', function() {
     		var newRow= `<tr>
-                <td><input type="text" name="username"/><input type="hidden" name="operationType" value="insert"/></td>
+                <td><input type="text" name="username"/></td>
                 <td><input type="text" name="name"/></td>
                 <td><input type="text" name="phone"/></td>
                 <td><input type="text" name="phoneLocation"/></td>
@@ -163,7 +164,6 @@ a {
                 <td><input type="text" name="role"/></td>
                 <td><button class="edit-btn" title="编辑"><i class="fas fa-edit" title="编辑"></i></button>  <button class="delete-btn" title="删除"><i class="fas fa-trash"></i></button></td>
                 <td><button class="save-btn" title="保存"><i class="fas fa-save"></i></button></td>
-                
            
                
                 
@@ -173,29 +173,12 @@ a {
     	 });
     	$('.custom-table').on('click', '.save-btn', function() {
     		 var $clickedButton = $(this);
-    		 var $row = $(this).closest('tr');
     		 var $inputs = $(this).closest('tr').find('input').prop('disabled', false);
     	            var userData = $(this).closest('tr').find('input').serialize();
     	            $.post('AddServlet', userData, function(response) {
-    	    
-    	            	 if (response === "Error: Username already exists.") {
-    	                     
-    	                     alert("员工编号已存在！可使用删除或编辑功能修改现有员工记录"); 
-    	                     $row .remove();
-    	                     return;
-    	                    
-    	                 }
-    	            	 if (response === "Error: Information incomplete.") {
-    	                     
-    	                     alert("用户信息不全，所有单元格均要被填"); 
-    	                     $row .remove();
-    	                     return;
-    	                 }
+    	                
     	                
     	            }).done(function() {
-
-  	            	  $row.find('input[name="operationType"]').val('update');
-  	            	  
     	            	$clickedButton.hide();
     	            	
     	            	
@@ -214,7 +197,7 @@ a {
             users.forEach(function(user) {
             	
                 var userRow = `<tr>
-                    <td><input type="text" name="username" value="${user.username}" disabled><input type="hidden" name="operationType" value="update"/></td>
+                    <td><input type="text" name="username" value="${user.username}" disabled></td>
                     <td><input type="text" name="name" value="${user.name}" disabled></td>
                     <td><input type="text" name="phone" value="${user.phone}" disabled></td>
                     <td><input type="text" name="phoneLocation" value="${user.phoneLocation}" disabled></td>
@@ -223,7 +206,6 @@ a {
                     <td><input type="text" name="role" value="${user.role}" disabled></td>
                     <td><button class="edit-btn" title="编辑"><i class="fas fa-edit"></i></button> <button class="delete-btn" title="删除" ><i class="fas fa-trash"></i></button></td>
                     <td><button class="save-btn" title="保存" style="display:none;"><i class="fas fa-save"></i></button></td>
-                   
                 </tr>`;
                 $tbody.append(userRow);
             });
@@ -256,11 +238,8 @@ a {
             
             csv.push(row.join(","));        
         }
-        var now = new Date();
-        now.setHours(now.getHours() + now.getTimezoneOffset()/60 - 8); // Adjust for GMT-8
-        var datetime = now.toISOString().slice(0,19).replace("T", "_").replace(/:/g, "-");
 
-        downloadCSV(csv.join("\n"), "用户数据_"+datetime +".csv");
+        downloadCSV(csv.join("\n"), "用户数据.csv");
     });
     function downloadCSV(csv, filename) {
         var csvFile;
@@ -320,7 +299,6 @@ a {
     });
      
     $('.heading-buttons').on('click', '#importButton', function() {
-    	alert("若上传用户列表存在重复用户名，系统将自动保留最新用户信息");
         $('#fileUpload').click(); 
     });
     
@@ -383,26 +361,24 @@ a {
     }
 
     function uploadDataToServer(data) {
-       
+        // Convert your data to a JSON string
         var jsonData = JSON.stringify(data);
 
-        
+        // Make the AJAX request
         $.ajax({
-            url: 'Upload', 
+            url: 'Upload', // The URL to the servlet
             type: 'POST',
             data: jsonData,
-            contentType: 'application/json', 
-            processData: false, 
+            contentType: 'application/json', // Set the content type to application/json for JSON data
+            processData: false, // processData should be false for JSON string data
             success: function(response) {
-                console.log("Upload successful!", response); 
+                console.log("Upload successful!", response); // Log the server response
             },
             error: function(xhr, status, error) {
                 alert("An error occurred: " + error + "\nStatus: " + status + "\nResponse: " + xhr.responseText);
             }
         });
     }
-   
-
 
 
 });
